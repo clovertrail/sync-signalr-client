@@ -55,6 +55,11 @@ namespace client
 
         protected override async Task OnExecuteAsync(CommandLineApplication app)
         {
+            if (String.IsNullOrEmpty(GroupName))
+            {
+                Console.WriteLine("Missing groupName parameter");
+                return;
+            }
             var cli = new Client(this.NotificationHubUrl);
             var tcs = new TaskCompletionSource<object>();
             var userId = GenRandomName(8);
