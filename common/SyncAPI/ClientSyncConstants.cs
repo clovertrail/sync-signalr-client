@@ -13,6 +13,8 @@ namespace common
         public const string LeftGroup = "LeftGroupConfirmation";
         public const string RequestConnectToTransportHub = "RequestConnectToTransportHub";
         public const string ResponseToTargetUrlAccessToken = "ResponseToTargetUrlAccessToken";
+        public const string ErrorHandler = "Error";
+
         // server hub method
         public const string JoinGroup = "JoinGroup";
         public const string LeaveGroup = "LeaveGroup";

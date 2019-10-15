@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <UserSecretsId>syncclient</UserSecretsId>
+    <UserSecretsId>syncclientx</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!--<GenerateAssemblyInfo>false</GenerateAssemblyInfo>-->
     <EnableSourceLink>false</EnableSourceLink>
   </PropertyGroup>
 

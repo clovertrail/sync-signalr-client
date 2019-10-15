@@ -12,9 +12,6 @@ namespace client
         private IDictionary<string, string> _redirectInfoToTransportHubInfo;
         private string _transportHubUrl;
         private string _notificationHubUrl;
-        private HubConnection _1st_transportHubConnection;
-        private HubConnection _1st_notificationHubConnection;
-        private HubConnection _2nd_notificationHubConnection;
 
         public Client(string transportHubUrl, string notificationHubUrl)
         {

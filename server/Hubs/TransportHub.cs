@@ -25,6 +25,7 @@ namespace SignalRChat.Hubs
             var serverName = _serverNameProvider.GetName();
             var clientRequestId = Context.GetHttpContext().Request.Query["asrs_request_id"];
             _pairing.Increase();
+            Console.WriteLine($"client{_pairing.Count()} request ID: {clientRequestId}");
             if (_pairing.Count() == 1)
             {
                 // Only the first connected client will get the sticky information

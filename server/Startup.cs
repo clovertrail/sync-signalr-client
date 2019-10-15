@@ -1,75 +1,37 @@
+using common.SyncAPI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using server;
+using Microsoft.Extensions.Hosting;
 using SignalRChat.Hubs;
 
 namespace SignalRChat
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, ASRSConfig asrsConfig)
-        {
-            Configuration = configuration;
-            ASRSConfig = asrsConfig;
-        }
-
-        public ASRSConfig ASRSConfig { get; set; }
-        public IConfiguration Configuration { get; }
-
+        // This method gets called by the runtime. Use this method to add services to the container.
+        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
-
-
-            services.AddCors(options => 
-            options.AddPolicy("CorsPolicy",
-                builder =>
-                {
-                    builder.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin();
-                }));
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-            services.AddSignalR()
-                    .AddAzureSignalR(opt =>
-                    {
-                        opt.ConnectionString = ASRSConfig.ConnectionString;
-                    })
-                    .AddMessagePackProtocol();
+            services.AddMvc();
+            services.AddSignalR().AddAzureSignalR().AddAzureSignalRSyncSDK();
         }
 
-        [System.Obsolete]
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                app.UseHsts();
-            }
-
-            app.UseCors("CorsPolicy");
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseCookiePolicy();
-
+            app.UseFileServer();
             app.UseRouting();
+            app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
+            app.UseEndpoints(routes =>
             {
-                endpoints.MapHub<TransportHub>("/transportHub");
-                endpoints.MapHub<NotificationHub>("/notificationHub");
-                endpoints.MapRazorPages();
+                routes.MapHub<TransportHub>("/transportHub");
+                routes.MapHub<NotificationHub>("/notificationHub");
             });
         }
     }

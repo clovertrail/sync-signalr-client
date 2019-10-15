@@ -24,6 +24,7 @@ namespace SyncClient
 
         internal string Version { get; }
 
+        // make this public
         public string AccessKey { get; }
 
         internal int? Port { get; }
