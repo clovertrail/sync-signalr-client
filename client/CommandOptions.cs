@@ -40,6 +40,8 @@ namespace client
             Console.WriteLine($"Group for sync: {groupName}");
             Console.WriteLine("Press Ctrl+C to stop");
             await WaitUntilCancel();
+            await firstNotificationHub.StopAsync();
+            await firstNotificationHub.StopAsync();
         }
         
     }
@@ -69,6 +71,8 @@ namespace client
             var secondTransportHubConnection = await cli.DirectConnectToTransportHub(info);
             Console.WriteLine("Press Ctrl+C to stop");
             await WaitUntilCancel();
+            await secondNotificationHub.StopAsync();
+            await secondTransportHubConnection.StopAsync();
         }
     }
 
