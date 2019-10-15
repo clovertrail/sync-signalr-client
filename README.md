@@ -6,7 +6,8 @@ Start the server by providing ASRS connection string:
 
 ```
 cd server
-dotnet run -- "Endpoint=xxxx"
+dotnet user-secrets set Azure:SignalR:ConnectionString "Endpoint=XXXX"
+dotnet run
 ```
 
 It listens on localhost:5000
@@ -18,28 +19,40 @@ Application started. Press Ctrl+C to shut down.
 ...
 ```
 
-Start the client:
+Start the two clients: primary and secondary
+
+The primary client will connect both notification hub and transport hub. It will print the group name to sync with secondary client.
+
 ```
 cd client
-dotnet run -- "http://localhost:5000/transportHub" "http://localhost:5000/notificationHub"
+dotnet run -- primary -t "http://localhost:5000/transportHub"  -n "http://localhost:5000/notificationHub"
 ```
 
 The output is:
 
 ```
 Received transport Hub info
-connection Id svzNGkH_f7CovDbs54NW1Af27570021
-connection Id mHThBUWRsb_Yg1IzlL7DgA2ded45221
+connection Id zA_SZyOQ0dlL36tHxd9tjwfc4659ff1
+Group for sync: eU20pZMn
+connection Id Z8dcx62vu4nunOjR4Q4cFwfc4659ff1
 Joined group
-connection Id 8MvSTUGLhVijQmOoPaJZIQ2ded45221
-Joined group
-Received hub information to go to transport
-Successful
-Received hub information to go to transport
-connection Id AHZ4vX-j0nA2P_Q8aLRCvgf27570021
-stop the connection
-stop the connection
-stop the connection
 ```
 
+The secondary client only connect notification hub, and it requires the group name for syncing.
 
+```
+cd client
+dotnet run -- secondar -g eU20pZMn -n "http://localhost:5000/notificationHub"
+```
+
+The output is:
+
+```
+connection Id VgFxaZS7SgjOxPdwMeZUpA2ded45221
+Joined group
+Received hub information to go to transport
+Press Ctrl+C to stop
+connection Id CXPQ1LC7VoHy26WIsoWDXQfc4659ff1
+```
+
+When you see two connections, it means the secondary client has connected to transport hub.
