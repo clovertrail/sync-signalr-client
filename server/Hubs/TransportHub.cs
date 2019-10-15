@@ -1,42 +1,31 @@
 ﻿using common;
+using common.SyncProtocol;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Azure.SignalR;
 using SyncClient;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SignalRChat.Hubs
 {
     public class TransportHub : Hub
     {
-        private readonly IServerNameProvider _serverNameProvider;
+        private SyncProtocols _syncProtocols;
         private Pairing<TransportHub> _pairing;
 
-        public TransportHub(IServerNameProvider serverNameProvider, Pairing<TransportHub> pairing)
+        public TransportHub(SyncProtocols syncProtocols, Pairing<TransportHub> pairing )
         {
-            _serverNameProvider = serverNameProvider;
+            _syncProtocols = syncProtocols;
             _pairing = pairing;
         }
 
         public override async Task OnConnectedAsync()
         {
             // Send sticky information to the client
-            var serverName = _serverNameProvider.GetName();
-            var clientRequestId = Context.GetHttpContext().Request.Query["asrs_request_id"];
             _pairing.Increase();
-            Console.WriteLine($"client{_pairing.Count()} request ID: {clientRequestId}");
+            Console.WriteLine($"client{_pairing.Count()} request ID: {SyncProtocols.ServiceStickyId(this)}");
             if (_pairing.Count() == 1)
             {
-                // Only the first connected client will get the sticky information
-                var dic = new Dictionary<string, string>()
-                {
-                    { "asrs.sync.1stclient.server", serverName },
-                    { "asrs.sync.1stclient.request_id", clientRequestId},
-                    { "asrs.sync.1stclient.hub", "transportHub"}
-                };
-                
-                await Clients.Client(Context.ConnectionId).SendAsync(ClientSyncConstants.TransportHubInfo, dic);
+                await _syncProtocols.GetStickyConnectionInfo(this);
             }
             if (_pairing.Count() == 2)
             {

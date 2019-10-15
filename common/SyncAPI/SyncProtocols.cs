@@ -11,10 +11,11 @@ namespace common.SyncProtocol
     public class SyncProtocols
     {
         private SyncClient.ServiceEndpoint _serviceEndpoint;
-        private readonly IOptions<ServiceOptions> _options;
+        private readonly IServerNameProvider _serverNameProvider;
 
-        public SyncProtocols(IOptions<ServiceOptions> options)
+        public SyncProtocols(IOptions<ServiceOptions> options, IServerNameProvider serverNameProvider)
         {
+            _serverNameProvider = serverNameProvider;
             _serviceEndpoint = new SyncClient.ServiceEndpoint(options.Value.ConnectionString);
         }
 
@@ -56,6 +57,26 @@ namespace common.SyncProtocol
                 return false;
             }
             return true;
+        }
+
+        public static string ServiceStickyId(Hub hub)
+        {
+            return hub.Context.GetHttpContext().Request.Query["asrs_request_id"];
+        }
+
+        public async Task GetStickyConnectionInfo(Hub hub)
+        {
+            var serverName = _serverNameProvider.GetName();
+            var clientRequestId = hub.Context.GetHttpContext().Request.Query["asrs_request_id"];
+            // Only the first connected client will get the sticky information
+            var dic = new Dictionary<string, string>()
+                {
+                    { "asrs.sync.1stclient.server", serverName },
+                    { "asrs.sync.1stclient.request_id", clientRequestId},
+                    { "asrs.sync.1stclient.hub", "transportHub"}
+                };
+
+            await hub.Clients.Client(hub.Context.ConnectionId).SendAsync(ClientSyncConstants.TransportHubInfo, dic);
         }
 
         public static async Task HandleRequest(Hub hub, IDictionary<string, string> payload)
