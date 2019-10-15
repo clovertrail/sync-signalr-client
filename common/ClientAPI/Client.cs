@@ -1,4 +1,5 @@
 ﻿using common;
+using common.ClientAPI;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
@@ -9,14 +10,21 @@ namespace client
     public class Client
     {
         private IDictionary<string, string> _transportHubInfo;
-        private IDictionary<string, string> _redirectInfoToTransportHubInfo;
-        private string _transportHubUrl;
-        private string _notificationHubUrl;
+
+        public string TransportHubUrl { get; set; }
+        public string NotificationHubUrl { get; set; }
+
+        public IDictionary<string, string> InfoToTransportHub { get; set; }
+
+        public Client(string notificationHubUrl)
+        {
+            NotificationHubUrl = notificationHubUrl;
+        }
 
         public Client(string transportHubUrl, string notificationHubUrl)
         {
-            _transportHubUrl = transportHubUrl;
-            _notificationHubUrl = notificationHubUrl;
+            TransportHubUrl = transportHubUrl;
+            NotificationHubUrl = notificationHubUrl;
         }
 
         public async Task<HubConnection> ConnectToTransportHub()
@@ -24,7 +32,7 @@ namespace client
             string selfConnectionId = null;
             var hubConnectionBuilder = new HubConnectionBuilder();
 
-            var hubConnection = hubConnectionBuilder.WithUrl(_transportHubUrl).WithAutomaticReconnect().Build();
+            var hubConnection = hubConnectionBuilder.WithUrl(TransportHubUrl).WithAutomaticReconnect().Build();
             hubConnection.Closed += HubConnection_Closed;
             hubConnection.On<IDictionary<string, string>>(ClientSyncConstants.TransportHubInfo, (payload) =>
             {
@@ -42,14 +50,19 @@ namespace client
 
         public async Task<HubConnection> DirectConnectToTransportHub()
         {
-            if (_redirectInfoToTransportHubInfo == null)
+            return await DirectConnectToTransportHub(InfoToTransportHub);
+        }
+
+        public async Task<HubConnection> DirectConnectToTransportHub(IDictionary<string, string> infoToTransportHub)
+        {
+            if (infoToTransportHub == null)
             {
                 Console.WriteLine();
                 return null;
             }
             var hubConnectionBuilder = new HubConnectionBuilder();
-            var hubConnection = hubConnectionBuilder.WithUrl(_redirectInfoToTransportHubInfo["asrs.sync.2ndclient.hub_url"], opt => {
-                opt.AccessTokenProvider = () => Task.FromResult(_redirectInfoToTransportHubInfo["asrs.sync.2ndclient.access_key"]);
+            var hubConnection = hubConnectionBuilder.WithUrl(infoToTransportHub["asrs.sync.2ndclient.hub_url"], opt => {
+                opt.AccessTokenProvider = () => Task.FromResult(infoToTransportHub["asrs.sync.2ndclient.access_key"]);
                 opt.SkipNegotiation = true;
                 opt.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
             }).Build();
@@ -64,47 +77,26 @@ namespace client
         public async Task<HubConnection> ConnectToNotificationHub(
             string groupName,
             string userId,
-            bool wantToConnectTransportHub,
+            bool isSecondaryClient,
             TaskCompletionSource<object> notificationHub)
         {
-            string selfConnectionId = null;
             var hubConnectionBuilder = new HubConnectionBuilder();
-            var hubConnection = hubConnectionBuilder.WithUrl(_notificationHubUrl).WithAutomaticReconnect().Build();
+            var hubConnection = hubConnectionBuilder.WithUrl(NotificationHubUrl).WithAutomaticReconnect().Build();
             hubConnection.Closed += HubConnection_Closed;
-            hubConnection.On(ClientSyncConstants.JoinedGroup, async () =>
+            if (isSecondaryClient)
             {
-                Console.WriteLine("Joined group");
-                if (wantToConnectTransportHub)
-                {
-                    // the 2nd connection to notification hub wants to connect transport hub
-                    var requestConnection = new Dictionary<string, string>()
-                    {
-                        { "asrs.sync.client.groupname", groupName},
-                        { "asrs.sync.2ndclient.userid", userId}
-                    };
-                    await hubConnection.SendAsync(ClientSyncConstants.GroupBroadcast, ClientSyncConstants.RequestType, requestConnection);
-                }
-            });
-            hubConnection.On<string>(ClientSyncConstants.HubConnected, (connectionId) =>
+                await HubConnectionHelpers.RequestAccessTokenAfterJoinNotificationGroup(hubConnection, groupName, userId);
+            }
+            else
             {
-                selfConnectionId = connectionId;
-                Console.WriteLine($"connection Id {selfConnectionId}");
-                hubConnection.SendAsync(ClientSyncConstants.JoinGroup, groupName);
-            });
-            hubConnection.On<IDictionary<string, string>>(ClientSyncConstants.RequestConnectToTransportHub, async (payload) =>
-            {
-                // Assume the 1st connection has already obtained hub connection info.
-                // merge with the previous 1st connection's info.
-                foreach (var val in _transportHubInfo)
-                {
-                    payload.Add(val.Key, val.Value);
-                }
-                await hubConnection.SendAsync(ClientSyncConstants.GroupBroadcast, ClientSyncConstants.ResponseType, payload);
-            });
+                await HubConnectionHelpers.JoinNotificationGroupAfterConnected(hubConnection, groupName, null);
+                await HubConnectionHelpers.ProvideTransportHubInfo(hubConnection, _transportHubInfo);
+            }
+            
             hubConnection.On<IDictionary<string, string>>(ClientSyncConstants.ResponseToTargetUrlAccessToken, (payload) =>
             {
                 // received the connection info to transport hub
-                _redirectInfoToTransportHubInfo = payload;
+                InfoToTransportHub = payload;
                 Console.WriteLine("Received hub information to go to transport");
                 if (notificationHub != null)
                 {
@@ -114,7 +106,6 @@ namespace client
             await hubConnection.StartAsync();
             return hubConnection;
         }
-
 
         private static Task HubConnection_Closed(Exception arg)
         {
