@@ -25,7 +25,7 @@ namespace common.sync
         }
 
         public static string GenerateClientAccessToken(
-            SyncClient.ServiceEndpoint serviceEndpoint,
+            global::SyncClient.ServiceEndpoint serviceEndpoint,
             string hubName,
             IEnumerable<Claim> claims,
             TimeSpan lifetime,
@@ -35,7 +35,7 @@ namespace common.sync
             return AuthenticationHelper.GenerateAccessToken(serviceEndpoint.AccessKey, audience, claims, lifetime, requestId);
         }
 
-        public static string GenerateClientEndpoint(SyncClient.ServiceEndpoint serviceEndpoint, string hubName, string requestId)
+        public static string GenerateClientEndpoint(global::SyncClient.ServiceEndpoint serviceEndpoint, string hubName, string requestId)
         {
             var clientRequestId = WebUtility.UrlEncode(requestId);
             var str = $"{serviceEndpoint.Endpoint}/client/?hub={hubName}&{Constants.QueryParameter.ConnectionRequestId}={clientRequestId}";

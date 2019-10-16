@@ -1,8 +1,7 @@
-﻿using client;
-using McMaster.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
 using System.Threading.Tasks;
 
-namespace SignalRStreamClient
+namespace common.sync.client
 {
     class Program
     {

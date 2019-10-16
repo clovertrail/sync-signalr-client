@@ -2,8 +2,9 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using common.sync;
 
-namespace client
+namespace common.sync.client
 {
     [VersionOptionFromMember(MemberName = nameof(GetVersion))]
     [HelpOption("--help")]
@@ -34,7 +35,7 @@ namespace client
         protected override async Task OnExecuteAsync(CommandLineApplication app)
         {
             var groupName = GenRandomName(this.GroupNameLength);
-            var cli = new Client(this.TransportHubUrl, this.NotificationHubUrl);
+            var cli = new SyncClient(this.TransportHubUrl, this.NotificationHubUrl);
             var firstTransportHub = await cli.ConnectToTransportHub();
             var firstNotificationHub = await cli.ConnectToNotificationHub(groupName, null, false, null);
             Console.WriteLine($"Group for sync: {groupName}");
@@ -62,7 +63,7 @@ namespace client
                 Console.WriteLine("Missing groupName parameter");
                 return;
             }
-            var cli = new Client(this.NotificationHubUrl);
+            var cli = new SyncClient(this.NotificationHubUrl);
             var tcs = new TaskCompletionSource<object>();
             var userId = GenRandomName(8);
             var secondNotificationHub = await cli.ConnectToNotificationHub(GroupName, userId, true, tcs);

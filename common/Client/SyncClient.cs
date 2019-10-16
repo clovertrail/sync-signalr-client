@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace common.sync
 {
-    public class Client
+    public class SyncClient
     {
         private IDictionary<string, string> _transportHubInfo;
 
@@ -14,12 +14,12 @@ namespace common.sync
 
         public IDictionary<string, string> InfoToTransportHub { get; set; }
 
-        public Client(string notificationHubUrl)
+        public SyncClient(string notificationHubUrl)
         {
             NotificationHubUrl = notificationHubUrl;
         }
 
-        public Client(string transportHubUrl, string notificationHubUrl)
+        public SyncClient(string transportHubUrl, string notificationHubUrl)
         {
             TransportHubUrl = transportHubUrl;
             NotificationHubUrl = notificationHubUrl;

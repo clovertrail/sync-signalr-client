@@ -13,13 +13,13 @@ namespace common.sync
      */
     public class SyncServer
     {
-        private SyncClient.ServiceEndpoint _serviceEndpoint;
+        private global::SyncClient.ServiceEndpoint _serviceEndpoint;
         private readonly IServerNameProvider _serverNameProvider;
 
         public SyncServer(IOptions<ServiceOptions> options, IServerNameProvider serverNameProvider)
         {
             _serverNameProvider = serverNameProvider;
-            _serviceEndpoint = new SyncClient.ServiceEndpoint(options.Value.ConnectionString);
+            _serviceEndpoint = new global::SyncClient.ServiceEndpoint(options.Value.ConnectionString);
         }
 
         public static async Task<bool> RequestParamValidator(IClientProxy iClient, IDictionary<string, string> payload)
