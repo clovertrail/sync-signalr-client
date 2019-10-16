@@ -2,7 +2,6 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using common.sync;
 
 namespace common.sync.client
 {
@@ -70,9 +69,9 @@ namespace common.sync.client
             await tcs.Task;
             var info = cli.InfoToTransportHub;
             var secondTransportHubConnection = await cli.DirectConnectToTransportHub(info);
+            await secondNotificationHub.StopAsync(); // drop from notification hub once it connected to transport hub.
             Console.WriteLine("Press Ctrl+C to stop");
             await WaitUntilCancel();
-            await secondNotificationHub.StopAsync();
             await secondTransportHubConnection.StopAsync();
         }
     }
