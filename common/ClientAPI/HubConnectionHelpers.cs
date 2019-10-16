@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace common.ClientAPI
@@ -49,8 +48,8 @@ namespace common.ClientAPI
                     // the 2nd connection to notification hub wants to connect transport hub
                     var requestConnection = new Dictionary<string, string>()
                     {
-                        { "asrs.sync.client.groupname", groupName},
-                        { "asrs.sync.2ndclient.userid", userId}
+                        { "demo.sync.client.groupname", groupName},
+                        { "demo.sync.2ndclient.userid", userId}
                     };
                     await hubConnection.SendAsync(ClientSyncConstants.GroupBroadcast, ClientSyncConstants.RequestType, requestConnection);
                 }

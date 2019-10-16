@@ -22,7 +22,9 @@ namespace SignalRChat.Hubs
         {
             // Send sticky information to the client
             _pairing.Increase();
+            // Show the client connection information
             Console.WriteLine($"client{_pairing.Count()} request ID: {SyncProtocols.ServiceStickyId(this)}");
+            Console.WriteLine($"client{_pairing.Count()} goes to ASRS: {SyncProtocols.ASRSInstanceId(this)}");
             if (_pairing.Count() == 1)
             {
                 await _syncProtocols.GetStickyConnectionInfo(this);

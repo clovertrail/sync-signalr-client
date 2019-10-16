@@ -61,8 +61,8 @@ namespace client
                 return null;
             }
             var hubConnectionBuilder = new HubConnectionBuilder();
-            var hubConnection = hubConnectionBuilder.WithUrl(infoToTransportHub["asrs.sync.2ndclient.hub_url"], opt => {
-                opt.AccessTokenProvider = () => Task.FromResult(infoToTransportHub["asrs.sync.2ndclient.access_key"]);
+            var hubConnection = hubConnectionBuilder.WithUrl(infoToTransportHub["demo.sync.2ndclient.hub_url"], opt => {
+                opt.AccessTokenProvider = () => Task.FromResult(infoToTransportHub["demo.sync.2ndclient.access_key"]);
                 opt.SkipNegotiation = true;
                 opt.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
             }).Build();

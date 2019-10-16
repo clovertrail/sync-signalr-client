@@ -26,7 +26,7 @@ namespace client
     internal class PrimaryConnectionOptions : BaseOption
     {
         [Option("-t|--transportHubUrl", Description = "Specify the transport hub URL.")]
-        public string TransportHubUrl { get; set; }
+        public string TransportHubUrl { get; set; } = "http://localhost:5000/transporthub";
 
         [Option("-l|--groupNameLength", Description = "Specify the group name length to do sync. The group name is auto generated.")]
         public int GroupNameLength { get; set; } = 8;
@@ -80,7 +80,7 @@ namespace client
     internal abstract class BaseOption
     {
         [Option("-n|--notificationHubUrl", Description = "Specify the notification hub URL.")]
-        public string NotificationHubUrl { get; set; }
+        public string NotificationHubUrl { get; set; } = "http://localhost:5000/notificationhub";
 
         protected virtual Task OnExecuteAsync(CommandLineApplication app)
         {

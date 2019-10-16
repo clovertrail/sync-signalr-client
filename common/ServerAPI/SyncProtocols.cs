@@ -21,14 +21,14 @@ namespace common.SyncProtocol
 
         public static async Task<bool> RequestParamValidator(IClientProxy iClient, IDictionary<string, string> payload)
         {
-            if (!payload.TryGetValue("asrs.sync.2ndclient.userid", out _))
+            if (!payload.TryGetValue("demo.sync.2ndclient.userid", out _))
             {
-                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, "Missing the parameter 'asrs.sync.2ndclient.userid'");
+                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, "Missing the parameter 'demo.sync.2ndclient.userid'");
                 return false;
             }
-            if (!payload.TryGetValue("asrs.sync.client.groupname", out _))
+            if (!payload.TryGetValue("demo.sync.client.groupname", out _))
             {
-                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, "Missing the parameter 'asrs.sync.client.groupname'");
+                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, "Missing the parameter 'demo.sync.client.groupname'");
                 return false;
             }
             return true;
@@ -36,24 +36,24 @@ namespace common.SyncProtocol
 
         public static async Task<bool> ResponseParamValidator(IClientProxy iClient, IDictionary<string, string> payload)
         {
-            if (!payload.TryGetValue("asrs.sync.2ndclient.userid", out _))
+            if (!payload.TryGetValue("demo.sync.2ndclient.userid", out _))
             {
-                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, $"Missing parameter for 'asrs.sync.2ndclient.userid'");
+                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, $"Missing parameter for 'demo.sync.2ndclient.userid'");
                 return false;
             }
-            if (!payload.TryGetValue("asrs.sync.1stclient.server", out _))
+            if (!payload.TryGetValue("demo.sync.1stclient.server", out _))
             {
-                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, $"Missing parameter for 'asrs.sync.1stclient.server'");
+                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, $"Missing parameter for 'demo.sync.1stclient.server'");
                 return false;
             }
-            if (!payload.TryGetValue("asrs.sync.1stclient.hub", out _))
+            if (!payload.TryGetValue("demo.sync.1stclient.hub", out _))
             {
-                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, $"Missing parameter for 'asrs.sync.1stclient.hub'");
+                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, $"Missing parameter for 'demo.sync.1stclient.hub'");
                 return false;
             }
-            if (!payload.TryGetValue("asrs.sync.1stclient.request_id", out _))
+            if (!payload.TryGetValue("demo.sync.1stclient.request_id", out _))
             {
-                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, $"Missing parameter for 'asrs.sync.1stclient.request_id'");
+                await iClient.SendAsync(ClientSyncConstants.ErrorHandler, $"Missing parameter for 'demo.sync.1stclient.request_id'");
                 return false;
             }
             return true;
@@ -64,6 +64,11 @@ namespace common.SyncProtocol
             return hub.Context.GetHttpContext().Request.Query["asrs_request_id"];
         }
 
+        public static string ASRSInstanceId(Hub hub)
+        {
+            return hub.Context.GetHttpContext().Request.Headers["Asrs-Instance-Id"];
+        }
+
         public async Task GetStickyConnectionInfo(Hub hub)
         {
             var serverName = _serverNameProvider.GetName();
@@ -71,9 +76,9 @@ namespace common.SyncProtocol
             // Only the first connected client will get the sticky information
             var dic = new Dictionary<string, string>()
                 {
-                    { "asrs.sync.1stclient.server", serverName },
-                    { "asrs.sync.1stclient.request_id", clientRequestId},
-                    { "asrs.sync.1stclient.hub", "transportHub"}
+                    { "demo.sync.1stclient.server", serverName },
+                    { "demo.sync.1stclient.request_id", clientRequestId},
+                    { "demo.sync.1stclient.hub", "transportHub"}
                 };
 
             await hub.Clients.Client(hub.Context.ConnectionId).SendAsync(ClientSyncConstants.TransportHubInfo, dic);
@@ -85,9 +90,9 @@ namespace common.SyncProtocol
             /**
              * payload has the following values:
              * {
-             *   "asrs.sync.client.groupname":"mySyncGroup",
-             *   "asrs.sync.2ndclient.userid":"2ndclient",
-             *   "asrs.sync.2ndclient.connection_id":"xxx"
+             *   "demo.sync.client.groupname":"mySyncGroup",
+             *   "demo.sync.2ndclient.userid":"2ndclient",
+             *   "demo.sync.2ndclient.connection_id":"xxx"
              * }
              */
             var iClientProxy = hub.Clients.Client(hub.Context.ConnectionId);
@@ -95,9 +100,9 @@ namespace common.SyncProtocol
             {
                 return;
             }
-            payload["asrs.sync.2ndclient.connection_id"] = hub.Context.ConnectionId;
+            payload["demo.sync.2ndclient.connection_id"] = hub.Context.ConnectionId;
 
-            await hub.Clients.Group(payload["asrs.sync.client.groupname"]).SendAsync(ClientSyncConstants.RequestConnectToTransportHub, payload);
+            await hub.Clients.Group(payload["demo.sync.client.groupname"]).SendAsync(ClientSyncConstants.RequestConnectToTransportHub, payload);
         }
 
         public async Task HandleResponse(Hub hub, IDictionary<string, string> payload)
@@ -107,13 +112,13 @@ namespace common.SyncProtocol
             /**
              * payload has the following values:
              * {
-             *   "asrs.sync.client.groupname":"mySyncGroup",
-             *   "asrs.sync.2ndclient.userid":"2ndclient",
-             *   "asrs.sync.2ndclient.connection_id":"xxx",
-             *   "asrs.sync.1stclient.request_id":"xxxxx",
-             *   "asrs.sync.1stclient.server":"yyyyy",
-             *   "asrs.sync.1stclient.hub_url":"https://xxxxx/targethub",
-             *   "asrs.sync.1stclient.hub":"targethub"
+             *   "demo.sync.client.groupname":"mySyncGroup",
+             *   "demo.sync.2ndclient.userid":"2ndclient",
+             *   "demo.sync.2ndclient.connection_id":"xxx",
+             *   "demo.sync.1stclient.request_id":"xxxxx",
+             *   "demo.sync.1stclient.server":"yyyyy",
+             *   "demo.sync.1stclient.hub_url":"https://xxxxx/targethub",
+             *   "demo.sync.1stclient.hub":"targethub"
              * }
              */
 
@@ -122,18 +127,18 @@ namespace common.SyncProtocol
                 return;
             }
             var claims = Helpers.BuildClaims(
-                payload["asrs.sync.2ndclient.userid"],
-                payload["asrs.sync.1stclient.server"]);
-            var hubName = payload["asrs.sync.1stclient.hub"];
-            var requestId = payload["asrs.sync.1stclient.request_id"];
-            payload["asrs.sync.2ndclient.hub_url"] = Helpers.GenerateClientEndpoint(_serviceEndpoint, hubName, requestId);
-            payload["asrs.sync.2ndclient.access_key"] = Helpers.GenerateClientAccessToken(
+                payload["demo.sync.2ndclient.userid"],
+                payload["demo.sync.1stclient.server"]);
+            var hubName = payload["demo.sync.1stclient.hub"];
+            var requestId = payload["demo.sync.1stclient.request_id"];
+            payload["demo.sync.2ndclient.hub_url"] = Helpers.GenerateClientEndpoint(_serviceEndpoint, hubName, requestId);
+            payload["demo.sync.2ndclient.access_key"] = Helpers.GenerateClientAccessToken(
                 _serviceEndpoint,
                 hubName,
                 claims,
                 TimeSpan.FromDays(1),
                 requestId);
-            await hub.Clients.Client(payload["asrs.sync.2ndclient.connection_id"]).SendAsync(ClientSyncConstants.ResponseToTargetUrlAccessToken, payload);
+            await hub.Clients.Client(payload["demo.sync.2ndclient.connection_id"]).SendAsync(ClientSyncConstants.ResponseToTargetUrlAccessToken, payload);
         }
     }
 }
