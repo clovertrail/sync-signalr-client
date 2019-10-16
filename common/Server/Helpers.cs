@@ -1,12 +1,10 @@
 ﻿using Microsoft.Azure.SignalR;
-using SyncClient;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
-using System.Text;
 
-namespace common.SyncAPI
+namespace common.sync
 {
     public class Helpers
     {

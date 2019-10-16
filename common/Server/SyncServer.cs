@@ -1,19 +1,22 @@
-﻿using common.SyncAPI;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.SignalR;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace common.SyncProtocol
+namespace common.sync
 {
-    public class SyncProtocols
+    /**
+     * For simplicity purpose, a Dictionary<string, string> is used to sync data between clients and server hub.
+     * A series of "demo.sync.xxxx" is defined.
+     */
+    public class SyncServer
     {
         private SyncClient.ServiceEndpoint _serviceEndpoint;
         private readonly IServerNameProvider _serverNameProvider;
 
-        public SyncProtocols(IOptions<ServiceOptions> options, IServerNameProvider serverNameProvider)
+        public SyncServer(IOptions<ServiceOptions> options, IServerNameProvider serverNameProvider)
         {
             _serverNameProvider = serverNameProvider;
             _serviceEndpoint = new SyncClient.ServiceEndpoint(options.Value.ConnectionString);
@@ -96,7 +99,7 @@ namespace common.SyncProtocol
              * }
              */
             var iClientProxy = hub.Clients.Client(hub.Context.ConnectionId);
-            if (!await SyncProtocols.RequestParamValidator(iClientProxy, payload))
+            if (!await SyncServer.RequestParamValidator(iClientProxy, payload))
             {
                 return;
             }
@@ -122,7 +125,7 @@ namespace common.SyncProtocol
              * }
              */
 
-            if (!await SyncProtocols.ResponseParamValidator(iClientProxy, payload))
+            if (!await SyncServer.ResponseParamValidator(iClientProxy, payload))
             {
                 return;
             }

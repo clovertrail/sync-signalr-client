@@ -1,5 +1,5 @@
 ﻿using common;
-using common.SyncProtocol;
+using common.sync;
 using Microsoft.AspNetCore.SignalR;
 using SyncClient;
 using System;

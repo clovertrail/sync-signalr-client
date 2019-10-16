@@ -1,9 +1,8 @@
-﻿using common.SyncProtocol;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using SyncClient;
 
-namespace common.SyncAPI
+namespace common.sync
 {
     public static class SyncSDKDependencyInjectionExtensions
     {

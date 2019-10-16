@@ -1,11 +1,9 @@
-﻿using common;
-using common.ClientAPI;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace client
+namespace common.sync
 {
     public class Client
     {
