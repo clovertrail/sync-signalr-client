@@ -70,9 +70,9 @@ namespace common.sync.client
             await tcs.Task; // waiting until it gets the target URL and access token. TODO: a time out is required.
             var info = cli.InfoToTransportHub;
             var secondTransportHubConnection = await cli.DirectConnectToTransportHub(info);
-            await secondNotificationHub.StopAsync(); // drop from notification hub once it connected to transport hub.
             Console.WriteLine("Press Ctrl+C to stop");
             await WaitUntilCancel();
+            await secondNotificationHub.StopAsync();
             await secondTransportHubConnection.StopAsync();
         }
     }
