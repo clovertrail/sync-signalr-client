@@ -55,4 +55,14 @@ Press Ctrl+C to stop
 connection Id CXPQ1LC7VoHy26WIsoWDXQfc4659ff1
 ```
 
-When you see two connections, it means the secondary client has connected to transport hub.
+When you see two connections, it means the secondary client has connected to transport hub. From server's log, we can double confirm whether those two clients connect to the same ASRS pod instance if the two clients have the same request ID and ASRS instance name.
+
+```
+...
+client1 request ID: slD5HFIGAAA=
+client1 goes to ASRS: d2833b1f-c6c1-4a02-a93b-1e1c48cee542
+...
+client2 request ID: slD5HFIGAAA=
+client2 goes to ASRS: d2833b1f-c6c1-4a02-a93b-1e1c48cee542
+...
+```
