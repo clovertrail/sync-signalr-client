@@ -14,7 +14,7 @@ namespace SignalRChat
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddSignalR().AddAzureSignalR().AddAzureSignalRSyncSDK();
+            services.AddSignalR().AddAzureSignalR().AddAzureSignalRSyncDemo();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

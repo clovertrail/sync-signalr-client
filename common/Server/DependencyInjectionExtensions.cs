@@ -7,10 +7,11 @@ namespace common.SyncAPI
 {
     public static class SyncSDKDependencyInjectionExtensions
     {
-        public static ISignalRServerBuilder AddAzureSignalRSyncSDK(this ISignalRServerBuilder builder)
+        public static ISignalRServerBuilder AddAzureSignalRSyncDemo(this ISignalRServerBuilder builder)
         {
             //builder.Services.
-            builder.Services.AddSingleton(typeof(Pairing<>)).AddSingleton(typeof(SyncProtocols));
+            builder.Services.AddSingleton(typeof(Counter<>)) // counter for demo purpose
+                            .AddSingleton(typeof(SyncProtocols)); // generate the access token and redirect URL
             return builder;
         }
     }

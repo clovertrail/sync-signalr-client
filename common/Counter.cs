@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace SyncClient
 {
-    public class Pairing<THub> where THub : Hub
+    public class Counter<THub> where THub : Hub
     {
         private long _Count;
 
-        public Pairing()
+        public Counter()
         {
 
         }
