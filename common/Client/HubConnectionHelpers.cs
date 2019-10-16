@@ -17,17 +17,18 @@ namespace common.sync
             return JoinNotificationGroupAfterConnectedCore(hubConnection, groupName, userId, true);
         }
 
-        public static Task ProvideTransportHubInfo(HubConnection hubConnection, IDictionary<string, string> transportHubInfo)
+        public static Task ProvideTransportHubInfo(HubConnection hubConnection, StickyPayloadData transportHubInfo)
         {
-            hubConnection.On<IDictionary<string, string>>(ClientSyncConstants.RequestConnectToTransportHub, async (payload) =>
+            hubConnection.On<RequestAccessData>(ClientSyncConstants.RequestConnectToTransportHub, async (payload) =>
             {
                 // Assume the 1st connection has already obtained hub connection info.
                 // merge with the previous 1st connection's info.
-                foreach (var val in transportHubInfo)
+                var response = new ResponseToRequestAccessData()
                 {
-                    payload.Add(val.Key, val.Value);
-                }
-                await hubConnection.SendAsync(ClientSyncConstants.GroupBroadcast, ClientSyncConstants.ResponseType, payload);
+                    RequestAccessData = payload,
+                    StickyPayloadData = transportHubInfo
+                };
+                await hubConnection.SendAsync(ClientSyncConstants.ResponseAccess, response);
             });
             return Task.CompletedTask;
         }
@@ -46,12 +47,12 @@ namespace common.sync
                 if (requestToken)
                 {
                     // the 2nd connection to notification hub wants to connect transport hub
-                    var requestConnection = new Dictionary<string, string>()
+                    var requestAccess = new RequestAccessData()
                     {
-                        { "demo.sync.client.groupname", groupName},
-                        { "demo.sync.2ndclient.userid", userId}
+                        GroupName = groupName,
+                        SecondaryClientUserId = userId
                     };
-                    await hubConnection.SendAsync(ClientSyncConstants.GroupBroadcast, ClientSyncConstants.RequestType, requestConnection);
+                    await hubConnection.SendAsync(ClientSyncConstants.RequestAccess, requestAccess);
                 }
             });
             return Task.CompletedTask;

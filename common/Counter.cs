@@ -1,15 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
-namespace SyncClient
+namespace common
 {
     public class Counter<THub> where THub : Hub
     {
-        private long _Count;
+        private long _count;
 
         public Counter()
         {
@@ -18,17 +14,17 @@ namespace SyncClient
 
         public void Increase()
         {
-            Interlocked.Add(ref _Count, 1);
+            Interlocked.Add(ref _count, 1);
         }
 
         public long Count()
         {
-            return Interlocked.Read(ref _Count);
+            return Interlocked.Read(ref _count);
         }
 
         public void Decrease()
         {
-            Interlocked.Decrement(ref _Count);
+            Interlocked.Decrement(ref _count);
         }
     }
 }

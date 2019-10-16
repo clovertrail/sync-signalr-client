@@ -1,7 +1,6 @@
 ﻿using common;
 using common.sync;
 using Microsoft.AspNetCore.SignalR;
-using SyncClient;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -26,7 +25,7 @@ namespace SignalRChat.Hubs
             await Clients.Client(Context.ConnectionId).SendAsync(ClientSyncConstants.HubConnected, Context.ConnectionId);
         }
 
-        public async Task GroupBroadcast(int requestType, IDictionary<string, string> payload)
+        public async Task RequestAccess(RequestAccessData payload)
         {
             if (!PairingReady())
             {
@@ -34,14 +33,18 @@ namespace SignalRChat.Hubs
                 return;
             }
             var iClientProxy = Clients.Client(Context.ConnectionId);
-            if (requestType == ClientSyncConstants.RequestType)
+            await _syncServer.HandleRequest(this, payload);
+        }
+
+        public async Task ResponseAccess(ResponseToRequestAccessData payload)
+        {
+            if (!PairingReady())
             {
-                await SyncServer.HandleRequest(this, payload);
+                // ignore the request if pairing parties have not been connected.
+                return;
             }
-            if (requestType == ClientSyncConstants.ResponseType)
-            {
-                await _syncServer.HandleResponse(this, payload);
-            }
+            var iClientProxy = Clients.Client(Context.ConnectionId);
+            await _syncServer.HandleResponse(this, payload);
         }
 
         public async Task JoinGroup(string groupName)

@@ -40,8 +40,9 @@ namespace common.sync.client
             Console.WriteLine($"Group for sync: {groupName}");
             Console.WriteLine("Press Ctrl+C to stop");
             await WaitUntilCancel();
+            // stop all connections.
             await firstNotificationHub.StopAsync();
-            await firstNotificationHub.StopAsync();
+            await firstTransportHub.StopAsync();
         }
         
     }

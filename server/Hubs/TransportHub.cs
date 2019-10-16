@@ -1,7 +1,6 @@
 ﻿using common;
 using common.sync;
 using Microsoft.AspNetCore.SignalR;
-using SyncClient;
 using System;
 using System.Threading.Tasks;
 
@@ -9,12 +8,12 @@ namespace SignalRChat.Hubs
 {
     public class TransportHub : Hub
     {
-        private SyncServer _syncProtocols;
+        private SyncServer _syncServer;
         private Counter<TransportHub> _pairing;
 
-        public TransportHub(SyncServer syncProtocols, Counter<TransportHub> pairing )
+        public TransportHub(SyncServer syncServer, Counter<TransportHub> pairing )
         {
-            _syncProtocols = syncProtocols;
+            _syncServer = syncServer;
             _pairing = pairing;
         }
 
@@ -27,7 +26,7 @@ namespace SignalRChat.Hubs
             Console.WriteLine($"client{_pairing.Count()} goes to ASRS: {SyncServer.ASRSInstanceId(this)}");
             if (_pairing.Count() == 1)
             {
-                await _syncProtocols.GetStickyConnectionInfo(this);
+                await _syncServer.GetStickyConnectionInfo(this);
             }
             if (_pairing.Count() == 2)
             {

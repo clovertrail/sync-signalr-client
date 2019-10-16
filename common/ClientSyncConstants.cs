@@ -18,10 +18,7 @@ namespace common
         // server hub method
         public const string JoinGroup = "JoinGroup";
         public const string LeaveGroup = "LeaveGroup";
-        public const string GroupBroadcast = "GroupBroadcast";
-
-        // payload type
-        public const int RequestType = 2;
-        public const int ResponseType = 1;
+        public const string RequestAccess = "RequestAccess";
+        public const string ResponseAccess = "ResponseAccess";
     }
 }
