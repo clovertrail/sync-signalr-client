@@ -11,12 +11,12 @@ namespace SignalRChat.Hubs
     public class NotificationHub : Hub
     {
         private Counter<NotificationHub> _pairing;
-        private SyncServer _syncProtocols;
+        private SyncServer _syncServer;
 
-        public NotificationHub(Counter<NotificationHub> pairing, SyncServer syncProtocols)
+        public NotificationHub(Counter<NotificationHub> pairing, SyncServer syncServer)
         {
             _pairing = pairing;
-            _syncProtocols = syncProtocols;
+            _syncServer = syncServer;
         }
 
         public override async Task OnConnectedAsync()
@@ -40,7 +40,7 @@ namespace SignalRChat.Hubs
             }
             if (requestType == ClientSyncConstants.ResponseType)
             {
-                await _syncProtocols.HandleResponse(this, payload);
+                await _syncServer.HandleResponse(this, payload);
             }
         }
 

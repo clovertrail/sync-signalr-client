@@ -66,7 +66,7 @@ namespace common.sync.client
             var tcs = new TaskCompletionSource<object>();
             var userId = GenRandomName(8);
             var secondNotificationHub = await cli.ConnectToNotificationHub(GroupName, userId, true, tcs);
-            await tcs.Task;
+            await tcs.Task; // waiting until it gets the target URL and access token. TODO: a time out is required.
             var info = cli.InfoToTransportHub;
             var secondTransportHubConnection = await cli.DirectConnectToTransportHub(info);
             await secondNotificationHub.StopAsync(); // drop from notification hub once it connected to transport hub.
