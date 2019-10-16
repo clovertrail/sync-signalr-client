@@ -10,10 +10,10 @@ namespace SignalRChat.Hubs
 {
     public class NotificationHub : Hub
     {
-        private Pairing<NotificationHub> _pairing;
-        private SyncProtocols _syncProtocols;
+        private Counter<NotificationHub> _pairing;
+        private SyncServer _syncProtocols;
 
-        public NotificationHub(Pairing<NotificationHub> pairing, SyncProtocols syncProtocols)
+        public NotificationHub(Counter<NotificationHub> pairing, SyncServer syncProtocols)
         {
             _pairing = pairing;
             _syncProtocols = syncProtocols;
@@ -36,7 +36,7 @@ namespace SignalRChat.Hubs
             var iClientProxy = Clients.Client(Context.ConnectionId);
             if (requestType == ClientSyncConstants.RequestType)
             {
-                await SyncProtocols.HandleRequest(this, payload);
+                await SyncServer.HandleRequest(this, payload);
             }
             if (requestType == ClientSyncConstants.ResponseType)
             {

@@ -11,7 +11,7 @@ namespace common.SyncAPI
         {
             //builder.Services.
             builder.Services.AddSingleton(typeof(Counter<>)) // counter for demo purpose
-                            .AddSingleton(typeof(SyncProtocols)); // generate the access token and redirect URL
+                            .AddSingleton(typeof(SyncServer)); // generate the access token and redirect URL
             return builder;
         }
     }
