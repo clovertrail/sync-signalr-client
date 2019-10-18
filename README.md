@@ -21,11 +21,11 @@ Application started. Press Ctrl+C to shut down.
 
 Start the two clients: primary and secondary
 
-The primary client will connect both notification hub and transport hub. It will print the group name to sync with secondary client.
+The primary client will connect both notification hub ("http://localhost:5000/notificationHub") and transport hub ("http://localhost:5000/transportHub"). It will print the group name to sync with secondary client.
 
 ```
 cd client
-dotnet run -- primary -t "http://localhost:5000/transportHub"  -n "http://localhost:5000/notificationHub"
+dotnet run -- primary
 ```
 
 The output is:
@@ -38,11 +38,11 @@ connection Id Z8dcx62vu4nunOjR4Q4cFwfc4659ff1
 Joined group
 ```
 
-The secondary client only connect notification hub, and it requires the group name for syncing.
+The secondary client only connect notification hub ("http://localhost:5000/notificationHub"), and it requires the group name for syncing.
 
 ```
 cd client
-dotnet run -- secondar -g eU20pZMn -n "http://localhost:5000/notificationHub"
+dotnet run -- secondar -g eU20pZMn
 ```
 
 The output is:
