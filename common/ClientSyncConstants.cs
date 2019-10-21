@@ -14,7 +14,7 @@ namespace common
         public const string RequestConnectToTransportHub = "RequestConnectToTransportHub";
         public const string ResponseToTargetUrlAccessToken = "ResponseToTargetUrlAccessToken";
         public const string ErrorHandler = "Error";
-
+        public const string ClientPartnerDropped = "ClientPartnerDropped";
         // server hub method
         public const string JoinGroup = "JoinGroup";
         public const string LeaveGroup = "LeaveGroup";

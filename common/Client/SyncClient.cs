@@ -7,41 +7,58 @@ namespace common.sync
 {
     public class SyncClient
     {
-        private StickyPayloadData _transportHubInfo;
-
         public string TransportHubUrl { get; set; }
-        public string NotificationHubUrl { get; set; }
 
         public AccessData InfoToTransportHub { get; set; }
 
-        public SyncClient(string notificationHubUrl)
-        {
-            NotificationHubUrl = notificationHubUrl;
-        }
-
-        public SyncClient(string transportHubUrl, string notificationHubUrl)
+        public SyncClient(string transportHubUrl)
         {
             TransportHubUrl = transportHubUrl;
-            NotificationHubUrl = notificationHubUrl;
         }
 
-        public async Task<HubConnection> ConnectToTransportHub()
+        public async Task<HubConnection> ConnectToHub(
+            bool isPrimaryClient,
+            string groupName,
+            string userId,
+            TaskCompletionSource<object> notificationHub)
         {
-            string selfConnectionId = null;
             var hubConnectionBuilder = new HubConnectionBuilder();
 
             var hubConnection = hubConnectionBuilder.WithUrl(TransportHubUrl).WithAutomaticReconnect().Build();
             hubConnection.Closed += HubConnection_Closed;
-            hubConnection.On<StickyPayloadData>(ClientSyncConstants.TransportHubInfo, (payload) =>
+            hubConnection.On<StickyPayloadData>(ClientSyncConstants.TransportHubInfo, async (payload) =>
             {
-                _transportHubInfo = payload;
-                Console.WriteLine("Received transport Hub info");
+                if (isPrimaryClient)
+                {
+                    //_transportHubInfo = payload;
+                    await HubConnectionHelpers.ProvideTransportHubInfo(hubConnection, payload);
+                    Console.WriteLine("Received sticky Hub info");
+                }
+                else
+                {
+                    // Ignore sticky for secondary client
+                }
             });
-            hubConnection.On<string>(ClientSyncConstants.HubConnected, (connectionId) =>
+            if (isPrimaryClient)
             {
-                // debug purpose
-                selfConnectionId = connectionId;
-                Console.WriteLine($"connection Id {selfConnectionId}");
+                await HubConnectionHelpers.JoinNotificationGroupAfterConnected(hubConnection, groupName, null);
+            }
+            else
+            {
+                await HubConnectionHelpers.RequestAccessTokenAfterJoinNotificationGroup(hubConnection, groupName, userId);
+                hubConnection.On<string>(ClientSyncConstants.ClientPartnerDropped, (droppedConnectionId) => {
+                    Console.WriteLine($"connection {droppedConnectionId} is dropped");
+                });
+            }
+            hubConnection.On<AccessData>(ClientSyncConstants.ResponseToTargetUrlAccessToken, (payload) =>
+            {
+                // received the connection info to transport hub
+                InfoToTransportHub = payload;
+                Console.WriteLine("Received hub information to go to transport");
+                if (notificationHub != null)
+                {
+                    notificationHub.TrySetResult(null);
+                }
             });
             await hubConnection.StartAsync();
             return hubConnection;
@@ -68,39 +85,6 @@ namespace common.sync
             hubConnection.On<string>(ClientSyncConstants.HubConnected, (connectionId) =>
             {
                 Console.WriteLine($"connection Id {connectionId}");
-            });
-            await hubConnection.StartAsync();
-            return hubConnection;
-        }
-
-        public async Task<HubConnection> ConnectToNotificationHub(
-            string groupName,
-            string userId,
-            bool isSecondaryClient,
-            TaskCompletionSource<object> notificationHub)
-        {
-            var hubConnectionBuilder = new HubConnectionBuilder();
-            var hubConnection = hubConnectionBuilder.WithUrl(NotificationHubUrl).WithAutomaticReconnect().Build();
-            hubConnection.Closed += HubConnection_Closed;
-            if (isSecondaryClient)
-            {
-                await HubConnectionHelpers.RequestAccessTokenAfterJoinNotificationGroup(hubConnection, groupName, userId);
-            }
-            else
-            {
-                await HubConnectionHelpers.JoinNotificationGroupAfterConnected(hubConnection, groupName, null);
-                await HubConnectionHelpers.ProvideTransportHubInfo(hubConnection, _transportHubInfo);
-            }
-            
-            hubConnection.On<AccessData>(ClientSyncConstants.ResponseToTargetUrlAccessToken, (payload) =>
-            {
-                // received the connection info to transport hub
-                InfoToTransportHub = payload;
-                Console.WriteLine("Received hub information to go to transport");
-                if (notificationHub != null)
-                {
-                    notificationHub.TrySetResult(null);
-                }
             });
             await hubConnection.StartAsync();
             return hubConnection;

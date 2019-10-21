@@ -2,6 +2,7 @@
 using common.sync;
 using Microsoft.AspNetCore.SignalR;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SignalRChat.Hubs
@@ -9,9 +10,9 @@ namespace SignalRChat.Hubs
     public class TransportHub : Hub
     {
         private SyncServer _syncServer;
-        private Counter<TransportHub> _pairing;
+        private ClientStatTracker<TransportHub> _pairing;
 
-        public TransportHub(SyncServer syncServer, Counter<TransportHub> pairing )
+        public TransportHub(SyncServer syncServer, ClientStatTracker<TransportHub> pairing )
         {
             _syncServer = syncServer;
             _pairing = pairing;
@@ -19,21 +20,82 @@ namespace SignalRChat.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            // Send sticky information to the client
-            _pairing.Increase();
             // Show the client connection information
-            Console.WriteLine($"client{_pairing.Count()} request ID: {SyncServer.ServiceStickyId(this)}");
-            Console.WriteLine($"client{_pairing.Count()} goes to ASRS: {SyncServer.ASRSInstanceId(this)}");
-            if (_pairing.Count() == 1)
+            var requestId = SyncServer.ServiceRequestId(this);
+            var asrsInstanceId = SyncServer.ASRSInstanceId(this);
+            Console.WriteLine($"client {Context.ConnectionId} request ID: {requestId}");
+            Console.WriteLine($"client {Context.ConnectionId} goes to ASRS: {asrsInstanceId}");
+            //Console.WriteLine($"client{_pairing.Count()} userId: {SyncServer.UserId(this)}");
+            var clientInfo = new ClientInfo()
             {
-                await _syncServer.GetStickyConnectionInfo(this);
-            }
-            if (_pairing.Count() == 2)
+                ConnectionId = Context.ConnectionId,
+                RequestId = requestId,
+                ASRSInstance = asrsInstanceId
+            };
+
+            _pairing.AddClient(clientInfo);
+
+            if (_pairing.TryGetAll(clientInfo, out List<ClientInfo> clientList))
             {
-                Console.WriteLine("Succesfully see two clients are connected to this hub");
+                if (clientList.Count == 1)
+                {
+                    // Send sticky information to the clients. For the secondary client, it will ignore this.
+                    await _syncServer.GetStickyConnectionInfo(this);
+                }
+                else if (clientList.Count == 2)
+                {
+                    // Two clients with the same sticky information
+                    Console.WriteLine("Succesfully see two clients are connected to this hub");
+                }
             }
             await Clients.Client(Context.ConnectionId).SendAsync(ClientSyncConstants.HubConnected, Context.ConnectionId);
         }
-        
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            var requestId = SyncServer.ServiceRequestId(this);
+            var asrsInstanceId = SyncServer.ASRSInstanceId(this);
+            var clientInfo = new ClientInfo()
+            {
+                ConnectionId = Context.ConnectionId,
+                RequestId = requestId,
+                ASRSInstance = asrsInstanceId
+            };
+            _pairing.RemoveClient(clientInfo);
+            if (_pairing.TryGetAll(clientInfo, out List<ClientInfo> clientList))
+            {
+                if (clientList.Count == 1)
+                {
+                    // A client of the pairing has dropped, but the other one is alive,
+                    // we need to inform the online client
+                    var onlineClient = clientList.ToArray()[0];
+                    await Clients.Client(onlineClient.ConnectionId).SendAsync(ClientSyncConstants.ClientPartnerDropped, Context.ConnectionId);
+                }
+            }
+        }
+
+        public async Task RequestAccess(RequestAccessData payload)
+        {
+            var iClientProxy = Clients.Client(Context.ConnectionId);
+            await _syncServer.HandleRequest(this, payload);
+        }
+
+        public async Task ResponseAccess(ResponseToRequestAccessData payload)
+        {
+            var iClientProxy = Clients.Client(Context.ConnectionId);
+            await _syncServer.HandleResponse(this, payload);
+        }
+
+        public async Task JoinGroup(string groupName)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            await Clients.Client(Context.ConnectionId).SendAsync(ClientSyncConstants.JoinedGroup);
+        }
+
+        public async Task LeaveGroup(string groupName)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            await Clients.Client(Context.ConnectionId).SendAsync(ClientSyncConstants.LeftGroup);
+        }
     }
 }
