@@ -31,10 +31,10 @@ dotnet run -- primary
 The output is:
 
 ```
-Group for sync: i6E+J1HJ
+Group for sync: HCeN5SOT
 Press Ctrl+C to stop
 Received sticky Hub info
-connection Id e2ZF4c0hhRkFj26zSigK0Afc4659ff1
+connection Id frU7pT5iGLz6iWFhgrOCjg2ded45221
 Joined group
 ```
 
@@ -42,31 +42,37 @@ The secondary client also connects the transport hub ("http://localhost:5000/tra
 
 ```
 cd client
-dotnet run -- secondar -g i6E+J1HJ
+dotnet run -- secondar -g HCeN5SOT
 ```
 
 The output is:
 
 ```
-connection Id qeJXcLBNwl8OupbqPeSrNw2ded45221
+connection Id 8XJJsnVH7ntSER7DVop9Rwfc4659ff1
 Joined group
 Received hub information to go to transport
 Press Ctrl+C to stop
-connection Id LNwfUmGAKWFLJuNjRtqnwwfc4659ff1
-stop the connection
+connection Id n__cOubg9LckMJz9JTiZtQ2ded45221
 ```
 
 When you see two connections with the same request ID and ASRS instance name, it means the secondary client has connected to transport hub with sticky information.
 ```
 ...
-client e2ZF4c0hhRkFj26zSigK0Afc4659ff1 request ID: /0T5zBwJAAA=
-client e2ZF4c0hhRkFj26zSigK0Afc4659ff1 goes to ASRS: b187b365-5d2a-4869-9079-a0015cc60cbb
+client frU7pT5iGLz6iWFhgrOCjg2ded45221 request ID: a3ujAgQLAAA=
+client frU7pT5iGLz6iWFhgrOCjg2ded45221 goes to ASRS: d2833b1f-c6c1-4a02-a93b-1e1c48cee542
 ...
-client qeJXcLBNwl8OupbqPeSrNw2ded45221 request ID: m6NU1RwJAAA=
-client qeJXcLBNwl8OupbqPeSrNw2ded45221 goes to ASRS: d2833b1f-c6c1-4a02-a93b-1e1c48cee542
-client LNwfUmGAKWFLJuNjRtqnwwfc4659ff1 request ID: /0T5zBwJAAA=
-client LNwfUmGAKWFLJuNjRtqnwwfc4659ff1 goes to ASRS: b187b365-5d2a-4869-9079-a0015cc60cbb
+client 8XJJsnVH7ntSER7DVop9Rwfc4659ff1 request ID: eCj8HAQLAAA=
+client 8XJJsnVH7ntSER7DVop9Rwfc4659ff1 goes to ASRS: b187b365-5d2a-4869-9079-a0015cc60cbb
+client n__cOubg9LckMJz9JTiZtQ2ded45221 request ID: a3ujAgQLAAA=
+client n__cOubg9LckMJz9JTiZtQ2ded45221 goes to ASRS: d2833b1f-c6c1-4a02-a93b-1e1c48cee542
 Succesfully see two clients are connected to this hub
 ```
 
-If you stop the secondary client by "ctrl + C", and retype the command "dotnet run -- secondar -g i6E+J1HJ", you will see it successfully reconnected.
+If you stop the secondary client by "ctrl + C", you will see the following information on primary client's console:
+
+```
+...
+Joined group
+connection n__cOubg9LckMJz9JTiZtQ2ded45221 is dropped
+```
+and retype the command "dotnet run -- secondar -g HCeN5SOT", you will see it successfully reconnected.
