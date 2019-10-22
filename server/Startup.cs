@@ -32,7 +32,6 @@ namespace SignalRChat
             app.UseEndpoints(routes =>
             {
                 routes.MapHub<TransportHub>("/transportHub");
-                routes.MapHub<NotificationHub>("/notificationHub");
             });
         }
     }

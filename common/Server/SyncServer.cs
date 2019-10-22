@@ -2,6 +2,7 @@
 using Microsoft.Azure.SignalR;
 using Microsoft.Extensions.Options;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace common.sync
@@ -61,7 +62,7 @@ namespace common.sync
             return true;
         }
 
-        public static string ServiceStickyId(Hub hub)
+        public static string ServiceRequestId(Hub hub)
         {
             return hub.Context.GetHttpContext().Request.Query["asrs_request_id"];
         }
@@ -69,6 +70,11 @@ namespace common.sync
         public static string ASRSInstanceId(Hub hub)
         {
             return hub.Context.GetHttpContext().Request.Headers["Asrs-Instance-Id"];
+        }
+
+        public static string UserId(Hub hub)
+        {
+            return hub.Context.UserIdentifier;
         }
 
         public async Task GetStickyConnectionInfo(Hub hub)

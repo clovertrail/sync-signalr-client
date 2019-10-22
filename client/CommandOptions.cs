@@ -25,24 +25,20 @@ namespace common.sync.client
     [Command(Name = "primary", FullName = "primary", Description = "Primary connection options")]
     internal class PrimaryConnectionOptions : BaseOption
     {
-        [Option("-t|--transportHubUrl", Description = "Specify the transport hub URL. Default value is 'http://localhost:5000/transporthub'")]
-        public string TransportHubUrl { get; set; } = "http://localhost:5000/transporthub";
-
         [Option("-l|--groupNameLength", Description = "Specify the group name length to do sync. The group name is auto generated.")]
         public int GroupNameLength { get; set; } = 8;
 
         protected override async Task OnExecuteAsync(CommandLineApplication app)
         {
             var groupName = GenRandomName(this.GroupNameLength);
-            var cli = new SyncClient(this.TransportHubUrl, this.NotificationHubUrl);
-            var firstTransportHub = await cli.ConnectToTransportHub();
-            var firstNotificationHub = await cli.ConnectToNotificationHub(groupName, null, false, null);
+            var cli = new SyncClient(this.TransportHubUrl);
+            var firstHub = await cli.ConnectToHub(true, groupName, null, null);
             Console.WriteLine($"Group for sync: {groupName}");
             Console.WriteLine("Press Ctrl+C to stop");
             await WaitUntilCancel();
             // stop all connections.
-            await firstNotificationHub.StopAsync();
-            await firstTransportHub.StopAsync();
+            await SyncClient.LeaveNegotiationGroupAsync(firstHub, groupName);
+            await firstHub.StopAsync();
         }
         
     }
@@ -63,15 +59,16 @@ namespace common.sync.client
                 Console.WriteLine("Missing groupName parameter");
                 return;
             }
-            var cli = new SyncClient(this.NotificationHubUrl);
+            var cli = new SyncClient(this.TransportHubUrl);
             var tcs = new TaskCompletionSource<object>();
             var userId = GenRandomName(8);
-            var secondNotificationHub = await cli.ConnectToNotificationHub(GroupName, userId, true, tcs);
+            var secondNotificationHub = await cli.ConnectToHub(false, GroupName, userId, tcs);
             await tcs.Task; // waiting until it gets the target URL and access token. TODO: a time out is required.
             var info = cli.InfoToTransportHub;
             var secondTransportHubConnection = await cli.DirectConnectToTransportHub(info);
             Console.WriteLine("Press Ctrl+C to stop");
             await WaitUntilCancel();
+            await SyncClient.LeaveNegotiationGroupAsync(secondNotificationHub, GroupName);
             await secondNotificationHub.StopAsync();
             await secondTransportHubConnection.StopAsync();
         }
@@ -80,8 +77,8 @@ namespace common.sync.client
     [HelpOption("--help")]
     internal abstract class BaseOption
     {
-        [Option("-n|--notificationHubUrl", Description = "Specify the notification hub URL. Default value is 'http://localhost:5000/notificationhub'")]
-        public string NotificationHubUrl { get; set; } = "http://localhost:5000/notificationhub";
+        [Option("-t|--transportHubUrl", Description = "Specify the transport hub URL. Default value is 'http://localhost:5000/transporthub'")]
+        public string TransportHubUrl { get; set; } = "http://localhost:5000/transporthub";
 
         protected virtual Task OnExecuteAsync(CommandLineApplication app)
         {

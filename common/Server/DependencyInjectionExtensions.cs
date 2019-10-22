@@ -9,7 +9,7 @@ namespace common.sync
         public static ISignalRServerBuilder AddAzureSignalRSyncDemo(this ISignalRServerBuilder builder)
         {
             //builder.Services.
-            builder.Services.AddSingleton(typeof(Counter<>)) // counter for demo purpose
+            builder.Services.AddSingleton(typeof(ClientStatTracker<>)) // counter for demo purpose
                             .AddSingleton(typeof(SyncServer)); // generate the access token and redirect URL
             return builder;
         }
