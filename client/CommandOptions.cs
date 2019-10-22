@@ -37,6 +37,7 @@ namespace common.sync.client
             Console.WriteLine("Press Ctrl+C to stop");
             await WaitUntilCancel();
             // stop all connections.
+            await SyncClient.LeaveNegotiationGroupAsync(firstHub, groupName);
             await firstHub.StopAsync();
         }
         
@@ -67,6 +68,7 @@ namespace common.sync.client
             var secondTransportHubConnection = await cli.DirectConnectToTransportHub(info);
             Console.WriteLine("Press Ctrl+C to stop");
             await WaitUntilCancel();
+            await SyncClient.LeaveNegotiationGroupAsync(secondNotificationHub, GroupName);
             await secondNotificationHub.StopAsync();
             await secondTransportHubConnection.StopAsync();
         }

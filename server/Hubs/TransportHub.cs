@@ -67,11 +67,12 @@ namespace SignalRChat.Hubs
                 if (clientList.Count == 1)
                 {
                     // A client of the pairing has dropped, but the other one is alive,
-                    // we need to inform the online client
+                    // we need to inform the online client.
                     var onlineClient = clientList.ToArray()[0];
                     await Clients.Client(onlineClient.ConnectionId).SendAsync(ClientSyncConstants.ClientPartnerDropped, Context.ConnectionId);
                 }
             }
+            Console.WriteLine($"Connection {Context.ConnectionId} is dropped");
         }
 
         public async Task RequestAccess(RequestAccessData payload)

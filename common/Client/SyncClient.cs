@@ -46,10 +46,11 @@ namespace common.sync
             else
             {
                 await HubConnectionHelpers.RequestAccessTokenAfterJoinNotificationGroup(hubConnection, groupName, userId);
-                hubConnection.On<string>(ClientSyncConstants.ClientPartnerDropped, (droppedConnectionId) => {
-                    Console.WriteLine($"connection {droppedConnectionId} is dropped");
-                });
             }
+            hubConnection.On<string>(ClientSyncConstants.ClientPartnerDropped, (droppedConnectionId) => {
+                // Connection drop notification
+                Console.WriteLine($"connection {droppedConnectionId} is dropped");
+            });
             hubConnection.On<AccessData>(ClientSyncConstants.ResponseToTargetUrlAccessToken, (payload) =>
             {
                 // received the connection info to transport hub
@@ -62,6 +63,15 @@ namespace common.sync
             });
             await hubConnection.StartAsync();
             return hubConnection;
+        }
+
+        public static async Task LeaveNegotiationGroupAsync(HubConnection hubConnection, string groupName)
+        {
+            // leave group first
+            if (hubConnection.State == HubConnectionState.Connected)
+            {
+                await hubConnection.SendAsync(ClientSyncConstants.LeaveGroup, groupName);
+            }
         }
 
         public async Task<HubConnection> DirectConnectToTransportHub()
@@ -85,6 +95,10 @@ namespace common.sync
             hubConnection.On<string>(ClientSyncConstants.HubConnected, (connectionId) =>
             {
                 Console.WriteLine($"connection Id {connectionId}");
+            });
+            hubConnection.On<string>(ClientSyncConstants.ClientPartnerDropped, (droppedConnectionId) => {
+                // Connection drop notification
+                Console.WriteLine($"connection {droppedConnectionId} is dropped");
             });
             await hubConnection.StartAsync();
             return hubConnection;
