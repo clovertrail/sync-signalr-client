@@ -86,6 +86,8 @@ namespace common.sync
                 Console.WriteLine();
                 return null;
             }
+            Console.WriteLine($"Endpoint: {infoToTransportHub.Endpoint}");
+            Console.WriteLine($"AccessToken: {infoToTransportHub.AccessKey}");
             var hubConnectionBuilder = new HubConnectionBuilder();
             var hubConnection = hubConnectionBuilder.WithUrl(infoToTransportHub.Endpoint, opt => {
                 opt.AccessTokenProvider = () => Task.FromResult(infoToTransportHub.AccessKey);

@@ -1,6 +1,7 @@
 ﻿using common;
 using common.sync;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,11 +12,14 @@ namespace SignalRChat.Hubs
     {
         private SyncServer _syncServer;
         private ClientStatTracker<TransportHub> _pairing;
+        private LoggerFactory _loggerFactory;
+        private ILogger _logger;
 
         public TransportHub(SyncServer syncServer, ClientStatTracker<TransportHub> pairing )
         {
             _syncServer = syncServer;
             _pairing = pairing;
+            _logger = _loggerFactory.CreateLogger<TransportHub>();
         }
 
         public override async Task OnConnectedAsync()
