@@ -1,5 +1,6 @@
 ﻿using common;
 using common.sync;
+using log4net;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,14 +13,24 @@ namespace SignalRChat.Hubs
     {
         private SyncServer _syncServer;
         private ClientStatTracker<TransportHub> _pairing;
-        private LoggerFactory _loggerFactory;
+        //private readonly ILog _log;
         private ILogger _logger;
 
         public TransportHub(SyncServer syncServer, ClientStatTracker<TransportHub> pairing )
         {
             _syncServer = syncServer;
             _pairing = pairing;
-            _logger = _loggerFactory.CreateLogger<TransportHub>();
+            //_log = LogManager.GetLogger(typeof(TransportHub));
+            ConfigureConsoleLog();
+        }
+
+        private void ConfigureConsoleLog()
+        {
+            var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddConsole();
+            });
+            _logger = loggerFactory.CreateLogger<TransportHub>();
         }
 
         public override async Task OnConnectedAsync()
@@ -27,9 +38,8 @@ namespace SignalRChat.Hubs
             // Show the client connection information
             var requestId = SyncServer.ServiceRequestId(this);
             var asrsInstanceId = SyncServer.ASRSInstanceId(this);
-            Console.WriteLine($"client {Context.ConnectionId} request ID: {requestId}");
-            Console.WriteLine($"client {Context.ConnectionId} goes to ASRS: {asrsInstanceId}");
-            //Console.WriteLine($"client{_pairing.Count()} userId: {SyncServer.UserId(this)}");
+            _logger.LogInformation($"client {Context.ConnectionId} request ID: {requestId}");
+            _logger.LogInformation($"client {Context.ConnectionId} goes to ASRS: {asrsInstanceId}");
             var clientInfo = new ClientInfo()
             {
                 ConnectionId = Context.ConnectionId,
